@@ -8,6 +8,22 @@ export default function App() {
   const [output, setOutput] = useState("");
   const [loading, setLoading] = useState(false);
 
+  const templates = {
+    python: "print('Hello CodeCloud')",
+    cpp: `#include <iostream>
+using namespace std;
+
+int main() {
+    cout << "Hello CodeCloud";
+    return 0;
+}`
+  };
+
+  const changeLanguage = (lang) => {
+    setLanguage(lang);
+    setCode(templates[lang]);
+  };
+
   const runCode = async () => {
     setLoading(true);
     setOutput("");
@@ -30,27 +46,11 @@ export default function App() {
     setLoading(false);
   };
 
-  const templates = {
-    python: "print('Hello CodeCloud')",
-    cpp: `#include <iostream>
-using namespace std;
-
-int main() {
-    cout << "Hello CodeCloud";
-    return 0;
-}`
-  };
-
-  const changeLanguage = (lang) => {
-    setLanguage(lang);
-    setCode(templates[lang]);
-  };
-
   return (
     <div style={styles.container}>
       {/* Header */}
       <div style={styles.header}>
-        <h2>☁️ CodeCloud</h2>
+        <h2 style={{ margin: 0 }}>CodeCloud</h2>
 
         <div style={styles.controls}>
           <select value={language} onChange={(e) => changeLanguage(e.target.value)}>
@@ -64,38 +64,38 @@ int main() {
         </div>
       </div>
 
-      {/* Main */}
+      {/* Main Layout */}
       <div style={styles.main}>
-        {/* Editor Side */}
+        {/* Left */}
         <div style={styles.left}>
-          <div style={styles.sectionTitle}>Editor</div>
+          <label style={styles.label}>Code</label>
 
           <div style={styles.editor}>
             <Editor
               height="100%"
               language={language === "cpp" ? "cpp" : "python"}
-              theme="vs-dark"
+              theme="vs-light"
               value={code}
-              onChange={(value) => setCode(value)}
+              onChange={(val) => setCode(val)}
             />
           </div>
 
-          <div style={styles.sectionTitle}>Input (stdin)</div>
+          <label style={styles.label}>Input</label>
 
           <textarea
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Enter input here..."
+            placeholder="Enter input..."
             style={styles.input}
           />
         </div>
 
-        {/* Output Side */}
+        {/* Right */}
         <div style={styles.right}>
-          <div style={styles.sectionTitle}>Output</div>
+          <label style={styles.label}>Output</label>
 
           <pre style={styles.output}>
-            {output || "Run your code to see output"}
+            {output || "Run code to see output"}
           </pre>
         </div>
       </div>
@@ -108,18 +108,17 @@ const styles = {
     height: "100vh",
     display: "flex",
     flexDirection: "column",
-    background: "#0f172a",
-    color: "#e2e8f0",
-    fontFamily: "sans-serif"
+    background: "#f5f5f5",
+    fontFamily: "Arial, sans-serif"
   },
 
   header: {
-    padding: "12px 20px",
-    background: "#020617",
+    padding: "10px 20px",
+    background: "#ffffff",
+    borderBottom: "1px solid #ddd",
     display: "flex",
     justifyContent: "space-between",
-    alignItems: "center",
-    borderBottom: "1px solid #1e293b"
+    alignItems: "center"
   },
 
   controls: {
@@ -130,53 +129,50 @@ const styles = {
   main: {
     flex: 1,
     display: "flex",
-    overflow: "hidden"
+    gap: "10px",
+    padding: "10px"
   },
 
   left: {
     flex: 1,
     display: "flex",
     flexDirection: "column",
-    padding: "10px",
     gap: "8px"
   },
 
   right: {
     width: "35%",
-    padding: "10px",
-    background: "#020617",
     display: "flex",
     flexDirection: "column",
     gap: "8px"
   },
 
-  sectionTitle: {
+  label: {
     fontSize: "14px",
-    color: "#94a3b8",
-    fontWeight: "bold"
+    fontWeight: "600",
+    color: "#333"
   },
 
   editor: {
     flex: 1,
-    border: "1px solid #1e293b",
+    border: "1px solid #ccc",
     borderRadius: "6px",
     overflow: "hidden"
   },
 
   input: {
     height: "120px",
-    background: "#020617",
-    color: "#e2e8f0",
-    border: "1px solid #1e293b",
-    borderRadius: "6px",
     padding: "10px",
+    border: "1px solid #ccc",
+    borderRadius: "6px",
+    fontSize: "14px",
     resize: "none"
   },
 
   output: {
     flex: 1,
-    background: "#020617",
-    border: "1px solid #1e293b",
+    background: "#ffffff",
+    border: "1px solid #ccc",
     borderRadius: "6px",
     padding: "10px",
     whiteSpace: "pre-wrap",
