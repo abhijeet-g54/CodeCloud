@@ -1,8 +1,10 @@
 import { useState } from "react";
+import Editor from "@monaco-editor/react";
 
 export default function App() {
-  const [code, setCode] = useState("");
+  const [code, setCode] = useState("print('Hello CodeCloud')");
   const [language, setLanguage] = useState("python");
+  const [input, setInput] = useState("");
   const [output, setOutput] = useState("");
 
   const runCode = async () => {
@@ -14,7 +16,7 @@ export default function App() {
         headers: {
           "Content-Type": "application/json"
         },
-        body: JSON.stringify({ language, code })
+        body: JSON.stringify({ language, code, input })
       });
 
       const data = await res.json();
@@ -29,30 +31,38 @@ export default function App() {
       <h1 style={styles.title}>☁️ CodeCloud</h1>
 
       <div style={styles.toolbar}>
-        <select
-          value={language}
-          onChange={(e) => setLanguage(e.target.value)}
-          style={styles.select}
-        >
+        <select value={language} onChange={(e) => setLanguage(e.target.value)}>
           <option value="python">Python</option>
           <option value="cpp">C++</option>
         </select>
 
-        <button onClick={runCode} style={styles.button}>
-          ▶ Run Code
-        </button>
+        <button onClick={runCode}>▶ Run</button>
       </div>
 
-      <textarea
-        style={styles.editor}
-        value={code}
-        onChange={(e) => setCode(e.target.value)}
-        placeholder="Write your code here..."
-      />
+      <div style={styles.main}>
+        {/* LEFT: CODE EDITOR */}
+        <div style={styles.editorPane}>
+          <Editor
+            height="100%"
+            language={language === "cpp" ? "cpp" : "python"}
+            theme="vs-dark"
+            value={code}
+            onChange={(val) => setCode(val)}
+          />
 
-      <div style={styles.outputBox}>
-        <h3>Output</h3>
-        <pre style={styles.output}>{output}</pre>
+          <textarea
+            placeholder="Input (stdin)"
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            style={styles.inputBox}
+          />
+        </div>
+
+        {/* RIGHT: OUTPUT */}
+        <div style={styles.outputPane}>
+          <h3>Output</h3>
+          <pre>{output}</pre>
+        </div>
       </div>
     </div>
   );
@@ -60,56 +70,42 @@ export default function App() {
 
 const styles = {
   container: {
-    backgroundColor: "#0f172a",
-    color: "#e2e8f0",
-    minHeight: "100vh",
-    padding: "30px",
-    fontFamily: "monospace"
+    height: "100vh",
+    background: "#0f172a",
+    color: "white",
+    fontFamily: "sans-serif",
+    display: "flex",
+    flexDirection: "column"
   },
   title: {
     textAlign: "center",
-    marginBottom: "20px"
+    padding: "10px"
   },
   toolbar: {
     display: "flex",
     justifyContent: "space-between",
-    marginBottom: "15px"
+    padding: "10px 20px"
   },
-  select: {
-    padding: "8px",
-    background: "#1e293b",
-    color: "white",
-    border: "1px solid #334155",
-    borderRadius: "6px"
+  main: {
+    display: "flex",
+    flex: 1
   },
-  button: {
-    padding: "8px 16px",
-    background: "#22c55e",
-    color: "black",
-    border: "none",
-    borderRadius: "6px",
-    cursor: "pointer",
-    fontWeight: "bold"
+  editorPane: {
+    flex: 1,
+    display: "flex",
+    flexDirection: "column"
   },
-  editor: {
-    width: "100%",
-    height: "300px",
-    background: "#020617",
-    color: "#38bdf8",
-    border: "1px solid #334155",
-    borderRadius: "8px",
-    padding: "10px",
-    fontSize: "14px",
-    marginBottom: "20px"
-  },
-  outputBox: {
+  outputPane: {
+    width: "35%",
     background: "#020617",
     padding: "15px",
-    borderRadius: "8px",
-    border: "1px solid #334155"
+    overflow: "auto"
   },
-  output: {
-    color: "#22c55e",
-    whiteSpace: "pre-wrap"
+  inputBox: {
+    height: "100px",
+    background: "#020617",
+    color: "white",
+    border: "none",
+    padding: "10px"
   }
 };

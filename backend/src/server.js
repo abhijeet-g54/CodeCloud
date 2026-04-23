@@ -12,16 +12,17 @@ app.get("/", (req, res) => {
 });
 
 app.post("/run", async (req, res) => {
-  const { language, code } = req.body;
+  const { language, code, input } = req.body;
 
   if (!language || !code) {
     return res.status(400).json({ error: "Missing language or code" });
   }
 
   try {
-    const output = await executeCode(language, code);
+    const output = await executeCode(language, code, input || "");
     res.json({ output });
   } catch (err) {
+    console.error(err);
     res.status(500).json({ error: "Execution failed" });
   }
 });

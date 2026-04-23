@@ -2,106 +2,78 @@ const { spawn } = require("child_process");
 const fs = require("fs");
 const path = require("path");
 
-function executeCode(language, code) {
+function executeCode(language, code, input = "") {
   return new Promise((resolve) => {
-    const fileId = Date.now();
+    const id = Date.now();
+    const baseDir = __dirname;
 
-    const baseDir = __dirname; // IMPORTANT: ensures correct path in /src
-
-    let filePath = "";
-    let runCommand = "";
-    let args = [];
+    let filePath, compileCmd, runCmd;
 
     if (language === "python") {
-      filePath = path.join(baseDir, `${fileId}.py`);
+      filePath = path.join(baseDir, `${id}.py`);
       fs.writeFileSync(filePath, code);
 
-      runCommand = "python3";
-      args = [filePath];
+      runCmd = spawn("python3", [filePath]);
+      runCmd.stdin.write(input);
+      runCmd.stdin.end();
     } 
     
     else if (language === "cpp") {
-      const cppPath = path.join(baseDir, `${fileId}.cpp`);
-      const outPath = path.join(baseDir, `${fileId}.out`);
+      const cppPath = path.join(baseDir, `${id}.cpp`);
+      const outPath = path.join(baseDir, `${id}.out`);
 
       fs.writeFileSync(cppPath, code);
 
-      runCommand = "g++";
-      args = [cppPath, "-o", outPath];
+      compileCmd = spawn("g++", [cppPath, "-o", outPath]);
 
-      filePath = { cppPath, outPath };
+      compileCmd.on("close", (codeExit) => {
+        if (codeExit !== 0) {
+          cleanup(id);
+          return resolve("Compilation error");
+        }
+
+        runCmd = spawn(outPath);
+        runCmd.stdin.write(input);
+        runCmd.stdin.end();
+
+        collectOutput(runCmd, resolve, id);
+      });
+
+      return;
     } 
     
     else {
       return resolve("Unsupported language");
     }
 
-    let output = "";
-    let errorOutput = "";
-
-    const process = spawn(runCommand, args);
-
-    process.stdout.on("data", (data) => {
-      output += data.toString();
-    });
-
-    process.stderr.on("data", (data) => {
-      errorOutput += data.toString();
-    });
-
-    process.on("close", (codeExit) => {
-      // If C++ compile succeeded → run executable
-      if (language === "cpp" && codeExit === 0) {
-        const exec = spawn(filePath.outPath);
-
-        exec.stdout.on("data", (data) => {
-          output += data.toString();
-        });
-
-        exec.stderr.on("data", (data) => {
-          errorOutput += data.toString();
-        });
-
-        exec.on("close", () => {
-          cleanup(fileId);
-          if (errorOutput) return resolve(errorOutput.trim());
-          resolve((output || "No output").trim());
-        });
-
-        setTimeout(() => {
-          exec.kill("SIGKILL");
-          cleanup(fileId);
-          resolve("Execution timed out (5 seconds)");
-        }, 5000);
-      } else {
-        cleanup(fileId);
-        if (errorOutput) return resolve(errorOutput.trim());
-        resolve((output || "No output").trim());
-      }
-    });
-
-    setTimeout(() => {
-      process.kill("SIGKILL");
-      cleanup(fileId);
-      resolve("Execution timed out (5 seconds)");
-    }, 5000);
+    collectOutput(runCmd, resolve, id);
   });
 }
 
-function cleanup(fileId) {
+function collectOutput(proc, resolve, id) {
+  let out = "";
+  let err = "";
+
+  proc.stdout.on("data", (d) => (out += d.toString()));
+  proc.stderr.on("data", (d) => (err += d.toString()));
+
+  proc.on("close", () => {
+    cleanup(id);
+    resolve((err || out || "No output").trim());
+  });
+
+  setTimeout(() => {
+    proc.kill("SIGKILL");
+    cleanup(id);
+    resolve("Execution timed out (5s)");
+  }, 5000);
+}
+
+function cleanup(id) {
   const baseDir = __dirname;
-
-  const files = [
-    `${fileId}.py`,
-    `${fileId}.cpp`,
-    `${fileId}.out`
-  ];
-
-  files.forEach((file) => {
-    const filePath = path.join(baseDir, file);
-    if (fs.existsSync(filePath)) {
-      fs.unlinkSync(filePath);
-    }
+  [".py", ".cpp", ".out"].forEach((ext) => {
+    const file = path.join(baseDir, `${id}${ext}`);
+    if (fs.existsSync(file)) fs.unlinkSync(file);
   });
 }
 
