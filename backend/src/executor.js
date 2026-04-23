@@ -7,32 +7,40 @@ function executeCode(language, code, input = "") {
     const id = Date.now();
     const baseDir = __dirname;
 
-    let filePath, compileCmd, runCmd;
+    let filePath, runCmd;
 
     if (language === "python") {
       filePath = path.join(baseDir, `${id}.py`);
       fs.writeFileSync(filePath, code);
 
       runCmd = spawn("python3", [filePath]);
+
       runCmd.stdin.write(input);
       runCmd.stdin.end();
-    } 
-    
+    }
+
     else if (language === "cpp") {
       const cppPath = path.join(baseDir, `${id}.cpp`);
       const outPath = path.join(baseDir, `${id}.out`);
 
       fs.writeFileSync(cppPath, code);
 
-      compileCmd = spawn("g++", [cppPath, "-o", outPath]);
+      const compile = spawn("g++", [cppPath, "-o", outPath]);
 
-      compileCmd.on("close", (codeExit) => {
+      let compileErr = "";
+
+      compile.stderr.on("data", (d) => {
+        compileErr += d.toString();
+      });
+
+      compile.on("close", (codeExit) => {
         if (codeExit !== 0) {
           cleanup(id);
-          return resolve("Compilation error");
+          return resolve(compileErr || "Compilation error");
         }
 
         runCmd = spawn(outPath);
+
         runCmd.stdin.write(input);
         runCmd.stdin.end();
 
@@ -40,8 +48,8 @@ function executeCode(language, code, input = "") {
       });
 
       return;
-    } 
-    
+    }
+
     else {
       return resolve("Unsupported language");
     }
@@ -65,7 +73,7 @@ function collectOutput(proc, resolve, id) {
   setTimeout(() => {
     proc.kill("SIGKILL");
     cleanup(id);
-    resolve("Execution timed out (5s)");
+    resolve("Execution timed out (5 seconds)");
   }, 5000);
 }
 
