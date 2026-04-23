@@ -31,9 +31,7 @@ int main() {
     try {
       const res = await fetch("https://YOUR_RENDER_URL.onrender.com/run", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ language, code, input })
       });
 
@@ -48,9 +46,9 @@ int main() {
 
   return (
     <div style={styles.container}>
-      {/* Header */}
-      <div style={styles.header}>
-        <h2 style={{ margin: 0 }}>CodeCloud</h2>
+      {/* Top Bar */}
+      <div style={styles.nav}>
+        <div style={styles.title}>CodeCloud</div>
 
         <div style={styles.controls}>
           <select value={language} onChange={(e) => changeLanguage(e.target.value)}>
@@ -64,11 +62,11 @@ int main() {
         </div>
       </div>
 
-      {/* Main Layout */}
+      {/* Main */}
       <div style={styles.main}>
-        {/* Left */}
-        <div style={styles.left}>
-          <label style={styles.label}>Code</label>
+        {/* Editor Card */}
+        <div style={styles.cardLarge}>
+          <div style={styles.label}>Code</div>
 
           <div style={styles.editor}>
             <Editor
@@ -80,7 +78,7 @@ int main() {
             />
           </div>
 
-          <label style={styles.label}>Input</label>
+          <div style={styles.label}>Input</div>
 
           <textarea
             value={input}
@@ -90,12 +88,12 @@ int main() {
           />
         </div>
 
-        {/* Right */}
-        <div style={styles.right}>
-          <label style={styles.label}>Output</label>
+        {/* Output Card */}
+        <div style={styles.cardSmall}>
+          <div style={styles.label}>Output</div>
 
           <pre style={styles.output}>
-            {output || "Run code to see output"}
+            {output || "Run your code to see output"}
           </pre>
         </div>
       </div>
@@ -108,17 +106,24 @@ const styles = {
     height: "100vh",
     display: "flex",
     flexDirection: "column",
-    background: "#f5f5f5",
-    fontFamily: "Arial, sans-serif"
+    background: "#f9f9f9",
+    fontFamily: "-apple-system, BlinkMacSystemFont, sans-serif",
+    color: "#111"
   },
 
-  header: {
-    padding: "10px 20px",
+  nav: {
+    height: "60px",
     background: "#ffffff",
-    borderBottom: "1px solid #ddd",
+    borderBottom: "1px solid #e5e5e5",
     display: "flex",
+    alignItems: "center",
     justifyContent: "space-between",
-    alignItems: "center"
+    padding: "0 20px"
+  },
+
+  title: {
+    fontSize: "18px",
+    fontWeight: "600"
   },
 
   controls: {
@@ -129,53 +134,63 @@ const styles = {
   main: {
     flex: 1,
     display: "flex",
-    gap: "10px",
-    padding: "10px"
+    gap: "20px",
+    padding: "20px"
   },
 
-  left: {
+  cardLarge: {
     flex: 1,
+    background: "#ffffff",
+    borderRadius: "12px",
+    padding: "16px",
     display: "flex",
     flexDirection: "column",
-    gap: "8px"
+    gap: "10px",
+    boxShadow: "0 4px 20px rgba(0,0,0,0.05)"
   },
 
-  right: {
+  cardSmall: {
     width: "35%",
+    background: "#ffffff",
+    borderRadius: "12px",
+    padding: "16px",
     display: "flex",
     flexDirection: "column",
-    gap: "8px"
+    gap: "10px",
+    boxShadow: "0 4px 20px rgba(0,0,0,0.05)"
   },
 
   label: {
-    fontSize: "14px",
-    fontWeight: "600",
-    color: "#333"
+    fontSize: "13px",
+    fontWeight: "500",
+    color: "#555"
   },
 
   editor: {
     flex: 1,
-    border: "1px solid #ccc",
-    borderRadius: "6px",
-    overflow: "hidden"
+    borderRadius: "8px",
+    overflow: "hidden",
+    border: "1px solid #eee"
   },
 
   input: {
-    height: "120px",
+    height: "100px",
+    borderRadius: "8px",
+    border: "1px solid #eee",
     padding: "10px",
-    border: "1px solid #ccc",
-    borderRadius: "6px",
     fontSize: "14px",
+    outline: "none",
     resize: "none"
   },
 
   output: {
     flex: 1,
-    background: "#ffffff",
-    border: "1px solid #ccc",
-    borderRadius: "6px",
+    background: "#fafafa",
+    border: "1px solid #eee",
+    borderRadius: "8px",
     padding: "10px",
     whiteSpace: "pre-wrap",
-    overflow: "auto"
+    overflow: "auto",
+    fontSize: "14px"
   }
 };
