@@ -11,7 +11,7 @@ export default function App() {
     setOutput("Running...");
 
     try {
-      const res = await fetch("https://YOUR_RENDER_URL.onrender.com/run", {
+      const res = await fetch("https://codecloud-backend.onrender.com/run", {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
