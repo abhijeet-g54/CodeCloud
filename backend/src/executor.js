@@ -14,7 +14,7 @@ function executeCode(language, code, input = "") {
       const inputPath = path.join(baseDir, `${id}.txt`);
 
       fs.writeFileSync(filePath, code);
-      fs.writeFileSync(inputPath, input);
+      fs.writeFileSync(inputPath, input + "\n");
 
       runCmd = spawn("python3", [filePath]);
 
@@ -30,7 +30,7 @@ function executeCode(language, code, input = "") {
       const inputPath = path.join(baseDir, `${id}.txt`);
 
       fs.writeFileSync(cppPath, code);
-      fs.writeFileSync(inputPath, input);
+      fs.writeFileSync(inputPath, input + "\n");
 
       const compile = spawn("g++", [cppPath, "-o", outPath]);
 
