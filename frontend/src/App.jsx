@@ -20,7 +20,7 @@ export default function App() {
       });
 
       const data = await res.json();
-      setOutput(data.output);
+      setOutput(data.output || (data.outputs ? data.outputs.join("\n---\n") : "No output"));
     } catch {
       setOutput("Error connecting to server");
     }
@@ -28,27 +28,28 @@ export default function App() {
 
   return (
     <div style={styles.container}>
-      <h1 style={styles.title}>☁️ CodeCloud</h1>
-
-      <div style={styles.toolbar}>
-        <select value={language} onChange={(e) => setLanguage(e.target.value)}>
-          <option value="python">Python</option>
-          <option value="cpp">C++</option>
-        </select>
-
-        <button onClick={runCode}>▶ Run</button>
+      <div style={styles.header}>
+        <h2>☁️ CodeCloud</h2>
+        <div>
+          <select value={language} onChange={(e) => setLanguage(e.target.value)}>
+            <option value="python">Python</option>
+            <option value="cpp">C++</option>
+          </select>
+          <button onClick={runCode}>Run</button>
+        </div>
       </div>
 
       <div style={styles.main}>
-        {/* LEFT: CODE EDITOR */}
         <div style={styles.editorPane}>
-          <Editor
-            height="100%"
-            language={language === "cpp" ? "cpp" : "python"}
-            theme="vs-dark"
-            value={code}
-            onChange={(val) => setCode(val)}
-          />
+          <div style={styles.editorWrapper}>
+            <Editor
+              height="100%"
+              language={language === "cpp" ? "cpp" : "python"}
+              theme="vs-dark"
+              value={code}
+              onChange={(val) => setCode(val)}
+            />
+          </div>
 
           <textarea
             placeholder="Input (stdin)"
@@ -58,10 +59,9 @@ export default function App() {
           />
         </div>
 
-        {/* RIGHT: OUTPUT */}
         <div style={styles.outputPane}>
           <h3>Output</h3>
-          <pre>{output}</pre>
+          <pre style={styles.output}>{output}</pre>
         </div>
       </div>
     </div>
@@ -71,29 +71,41 @@ export default function App() {
 const styles = {
   container: {
     height: "100vh",
+    display: "flex",
+    flexDirection: "column",
+    overflow: "hidden",
     background: "#0f172a",
     color: "white",
-    fontFamily: "sans-serif",
-    display: "flex",
-    flexDirection: "column"
+    fontFamily: "sans-serif"
   },
-  title: {
-    textAlign: "center",
-    padding: "10px"
-  },
-  toolbar: {
+  header: {
+    padding: "10px 20px",
     display: "flex",
     justifyContent: "space-between",
-    padding: "10px 20px"
+    alignItems: "center",
+    background: "#020617"
   },
   main: {
+    flex: 1,
     display: "flex",
-    flex: 1
+    overflow: "hidden"
   },
   editorPane: {
     flex: 1,
     display: "flex",
-    flexDirection: "column"
+    flexDirection: "column",
+    overflow: "hidden"
+  },
+  editorWrapper: {
+    flex: 1
+  },
+  inputBox: {
+    height: "120px",
+    background: "#020617",
+    color: "white",
+    border: "none",
+    padding: "10px",
+    resize: "none"
   },
   outputPane: {
     width: "35%",
@@ -101,11 +113,7 @@ const styles = {
     padding: "15px",
     overflow: "auto"
   },
-  inputBox: {
-    height: "100px",
-    background: "#020617",
-    color: "white",
-    border: "none",
-    padding: "10px"
+  output: {
+    whiteSpace: "pre-wrap"
   }
 };
