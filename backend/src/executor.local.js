@@ -18,10 +18,9 @@ function executeCode(language, code, input = "") {
 
       runCmd = spawn("python3", [filePath]);
 
-      const inputStream = fs.createReadStream(inputPath);
-      inputStream.pipe(runCmd.stdin);
+      fs.createReadStream(inputPath).pipe(runCmd.stdin);
 
-      collectOutput(runCmd, resolve, id);
+      collect(runCmd, resolve, id);
     }
 
     else if (language === "cpp") {
@@ -35,10 +34,7 @@ function executeCode(language, code, input = "") {
       const compile = spawn("g++", [cppPath, "-o", outPath]);
 
       let compileErr = "";
-
-      compile.stderr.on("data", (d) => {
-        compileErr += d.toString();
-      });
+      compile.stderr.on("data", (d) => (compileErr += d.toString()));
 
       compile.on("close", (codeExit) => {
         if (codeExit !== 0) {
@@ -47,11 +43,9 @@ function executeCode(language, code, input = "") {
         }
 
         runCmd = spawn(outPath);
+        fs.createReadStream(inputPath).pipe(runCmd.stdin);
 
-        const inputStream = fs.createReadStream(inputPath);
-        inputStream.pipe(runCmd.stdin);
-
-        collectOutput(runCmd, resolve, id);
+        collect(runCmd, resolve, id);
       });
 
       return;
@@ -63,7 +57,7 @@ function executeCode(language, code, input = "") {
   });
 }
 
-function collectOutput(proc, resolve, id) {
+function collect(proc, resolve, id) {
   let out = "";
   let err = "";
 

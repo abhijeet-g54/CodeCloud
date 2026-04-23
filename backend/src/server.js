@@ -1,6 +1,14 @@
+require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
-const { executeCode } = require("./executor");
+
+const useDocker = process.env.USE_DOCKER === "true";
+
+const executor = useDocker
+  ? require("./executor.docker")
+  : require("./executor.local");
+
+const { executeCode } = executor;
 
 const app = express();
 
@@ -8,7 +16,7 @@ app.use(cors());
 app.use(express.json());
 
 app.get("/", (req, res) => {
-  res.send("CodeCloud API is running 🚀");
+  res.send(`CodeCloud API running (${useDocker ? "Docker" : "Local"})`);
 });
 
 app.post("/run", async (req, res) => {
