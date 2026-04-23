@@ -7,23 +7,30 @@ function executeCode(language, code, input = "") {
     const id = Date.now();
     const baseDir = __dirname;
 
-    let filePath, runCmd;
+    let runCmd;
 
     if (language === "python") {
-      filePath = path.join(baseDir, `${id}.py`);
+      const filePath = path.join(baseDir, `${id}.py`);
+      const inputPath = path.join(baseDir, `${id}.txt`);
+
       fs.writeFileSync(filePath, code);
+      fs.writeFileSync(inputPath, input);
 
       runCmd = spawn("python3", [filePath]);
 
-      runCmd.stdin.write(input);
-      runCmd.stdin.end();
+      const inputStream = fs.createReadStream(inputPath);
+      inputStream.pipe(runCmd.stdin);
+
+      collectOutput(runCmd, resolve, id);
     }
 
     else if (language === "cpp") {
       const cppPath = path.join(baseDir, `${id}.cpp`);
       const outPath = path.join(baseDir, `${id}.out`);
+      const inputPath = path.join(baseDir, `${id}.txt`);
 
       fs.writeFileSync(cppPath, code);
+      fs.writeFileSync(inputPath, input);
 
       const compile = spawn("g++", [cppPath, "-o", outPath]);
 
@@ -41,8 +48,8 @@ function executeCode(language, code, input = "") {
 
         runCmd = spawn(outPath);
 
-        runCmd.stdin.write(input);
-        runCmd.stdin.end();
+        const inputStream = fs.createReadStream(inputPath);
+        inputStream.pipe(runCmd.stdin);
 
         collectOutput(runCmd, resolve, id);
       });
@@ -53,8 +60,6 @@ function executeCode(language, code, input = "") {
     else {
       return resolve("Unsupported language");
     }
-
-    collectOutput(runCmd, resolve, id);
   });
 }
 
@@ -79,7 +84,7 @@ function collectOutput(proc, resolve, id) {
 
 function cleanup(id) {
   const baseDir = __dirname;
-  [".py", ".cpp", ".out"].forEach((ext) => {
+  [".py", ".cpp", ".out", ".txt"].forEach((ext) => {
     const file = path.join(baseDir, `${id}${ext}`);
     if (fs.existsSync(file)) fs.unlinkSync(file);
   });

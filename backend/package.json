@@ -1,7 +1,6 @@
 {
   "name": "codecloud-backend",
   "version": "1.0.0",
-  "description": "CodeCloud Backend",
   "main": "src/server.js",
   "scripts": {
     "start": "node src/server.js"
